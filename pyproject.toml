@@ -1,0 +1,18 @@
+[project]
+name = "book-store"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "alembic>=1.18.4",
+    "asyncpg>=0.31.0",
+    "fastapi[standard]>=0.135.3",
+    "passlib[bcrypt]>=1.7.4",
+    "psycopg2>=2.9.11",
+    "pydantic>=2.13.0",
+    "python-dotenv>=1.2.2",
+    "python-jose>=3.5.0",
+    "sqlalchemy>=2.0.49",
+    "uvicorn>=0.44.0",
+]

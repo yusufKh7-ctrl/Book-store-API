@@ -1,0 +1,5 @@
+Entitis for my project:
+- Users
+- Books
+- Order
+- Category

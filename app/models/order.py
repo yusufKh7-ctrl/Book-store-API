@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class Order(Base):
     __tablename__ = "orders"
     __table_args__ = (
-        CheckConstraint("total_price >= 0", name="check_total_price_positive"),
+        CheckConstraint("total_price >= 0", name="check_total_price_non_negative"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -32,7 +32,7 @@ class Order(Base):
 class OrderItem(Base):
     __tablename__ = "order_items"
     __table_args__ = (
-        CheckConstraint("quantity >= 0", name="check_quantity_positive"),
+        CheckConstraint("quantity > 0", name="check_quantity_positive"),
         CheckConstraint("unit_price >= 0", name="check_unit_price_positive"),
     )
 
@@ -42,5 +42,5 @@ class OrderItem(Base):
     quantity: Mapped[int] = mapped_column(default=1)
     unit_price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
-    order: Mapped["Order"] = relationship(back_populates="items")
+    order:Mapped["Order"] = relationship(back_populates="items")
     book: Mapped["Book"] = relationship(back_populates="order_items")

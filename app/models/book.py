@@ -14,10 +14,13 @@ if TYPE_CHECKING:
 class Book(Base):
     __tablename__ = "books"
 
-    __table_args__ = (CheckConstraint("stock >= 0", name="check_stock_non_negative"),)
+    __table_args__ = (
+        CheckConstraint("stock >= 0", name="check_stock_non_negative"),
+        CheckConstraint("price >= 0", name="check_price_non_negative")
+        )
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(100), index=True)
-    description: Mapped[str] = mapped_column(String)
+    description: Mapped[str | None] = mapped_column(String, nullable=True)
     author: Mapped[str] = mapped_column(String)
     price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     stock: Mapped[int] = mapped_column()

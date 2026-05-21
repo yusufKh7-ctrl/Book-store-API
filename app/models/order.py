@@ -42,5 +42,5 @@ class OrderItem(Base):
     quantity: Mapped[int] = mapped_column(default=1)
     unit_price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
-    order:Mapped["Order"] = relationship(back_populates="items")
+    order: Mapped["Order"] = relationship(back_populates="items")
     book: Mapped["Book"] = relationship(back_populates="order_items")

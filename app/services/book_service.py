@@ -10,9 +10,12 @@ async def create_book_service(
     ):
     repo = BookRepository(db)
     book = Book(**book_data.model_dump())
-    
-    
-    book = await repo.create(book)
+    existing_book = await repo.get_book_by_title_and_author(book.title, book.author)
+    if existing_book:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="This book is already registered in the system")
+    book = repo.create(book)
     await db.commit()
     await db.refresh(book)
     return book
@@ -46,7 +49,6 @@ async def update_book_by_id_service(
 ):
     repo = BookRepository(db)
     book = await repo.get_by_id(book_id)
-    
     if not book:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -1,13 +1,16 @@
+from typing import Annotated
 from passlib.context import CryptContext
-from fastapi import HTTPException
+from fastapi import HTTPException, status,Depends
+from fastapi.security import OAuth2PasswordBearer
 from app.config import settings
-from jose import jwt
+from jose import jwt, JWTError
 from datetime import datetime, timedelta, UTC
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.user import UserLogin
 from app.models.user import User
-from sqlalchemy import select
 from typing import Dict
+from app.repositories.user_repository import UserRepository
+from app.db.session import SessionDep
 
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
@@ -36,8 +39,8 @@ async def login_service(
     data: UserLogin,
     db: AsyncSession 
 ) -> Dict[str, str]:
-    result = await db.execute(select(User).where(User.email == data.email))
-    user = result.scalar_one_or_none()
+    repo = UserRepository(db)
+    user =  await repo.get_user_by_email(data.email)
     
     if not user or not verify_password(data.password, user.hashed_password):
         raise HTTPException(
@@ -51,3 +54,4 @@ async def login_service(
         "access_token": token,
         "token_type": "bearer"
     }
+    

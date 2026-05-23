@@ -12,7 +12,7 @@ class OrderItemCreate(BaseModel):
 class OrderItemPublic(BaseModel):
     book: BookPublic
     quantity: int
-    unit_price: int
+    unit_price: Decimal
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -34,7 +34,7 @@ async def create_order_service(
         if item.quantity > book.stock:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Quantity for '{book.title}' is not curently available."
+                detail=f"Quantity for '{book.title}' is not currently available."
             )
 
         book.stock -= item.quantity
@@ -55,7 +55,16 @@ async def create_order_service(
     await order_repo.create_order(order)
         
     await db.commit()
-    await db.refresh(order)
+    return await order_repo.get_order_by_id(order.id)
+    # await db.refresh(order)
+    # return order
     
+async def get_order_by_id_service(db: AsyncSession, order_id: int):
+    repo = OrderRepository(db)
+    order = await repo.get_order_by_id(order_id)
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found."
+        )
     return order
-    

@@ -8,13 +8,10 @@ from typing import Annotated
 
 router = APIRouter()
 
+
 @router.post("/login")
 async def login(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db: SessionDep
-    ):
-    user_login = UserLogin(
-        email=form_data.username,
-        password=form_data.password
-    )
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: SessionDep
+):
+    user_login = UserLogin(email=form_data.username, password=form_data.password)
     return await login_service(user_login, db)

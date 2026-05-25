@@ -28,4 +28,3 @@ class OrderPublic(BaseModel):
     items: list[OrderItemPublic]
 
     model_config = ConfigDict(from_attributes=True)
-

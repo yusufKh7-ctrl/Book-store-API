@@ -16,7 +16,7 @@ class Book(Base):
     __table_args__ = (
         CheckConstraint("stock >= 0", name="check_stock_non_negative"),
         CheckConstraint("price >= 0", name="check_price_non_negative"),
-        )
+    )
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(100), index=True)
     description: Mapped[str | None] = mapped_column(String, nullable=True)

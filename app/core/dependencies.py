@@ -16,44 +16,42 @@ oauth_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 async def get_current_user(
     token: Annotated[str, Depends(oauth_scheme)],
-    db: Annotated[AsyncSession, Depends(get_db)]
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     credentials_exception = HTTPException(
         status_code=401,
         detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},  
+        headers={"WWW-Authenticate": "Bearer"},
     )
-    
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
         if user_id is None:
             raise credentials_exception
-        
+
         user_id = int(user_id)
     except JWTError:
         raise credentials_exception
-    
+
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
-    
+
     if not user:
-        raise credentials_exception    
+        raise credentials_exception
     return user
 
 
-async def get_current_active_user(user = Depends(get_current_user)):
+async def get_current_active_user(user=Depends(get_current_user)):
     if not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Inactive user."
-            )
+            status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user."
+        )
     return user
 
 
-async def get_admin_user(user= Depends(get_current_active_user)):
+async def get_admin_user(user=Depends(get_current_active_user)):
     if not user.is_admin:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions."
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions."
         )

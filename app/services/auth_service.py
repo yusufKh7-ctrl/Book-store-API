@@ -1,6 +1,6 @@
 from typing import Annotated
 from passlib.context import CryptContext
-from fastapi import HTTPException, status,Depends
+from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 from app.config import settings
 from jose import jwt, JWTError
@@ -35,23 +35,13 @@ def create_access_token(data: dict) -> str:
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-async def login_service(
-    data: UserLogin,
-    db: AsyncSession 
-) -> Dict[str, str]:
+async def login_service(data: UserLogin, db: AsyncSession) -> Dict[str, str]:
     repo = UserRepository(db)
-    user =  await repo.get_user_by_email(data.email)
-    
+    user = await repo.get_user_by_email(data.email)
+
     if not user or not verify_password(data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid email or password."
-        )
-    
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+
     token = create_access_token({"sub": str(user.id)})
-    
-    return {
-        "access_token": token,
-        "token_type": "bearer"
-    }
-    
+
+    return {"access_token": token, "token_type": "bearer"}

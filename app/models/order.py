@@ -44,3 +44,4 @@ class OrderItem(Base):
 
     order: Mapped["Order"] = relationship(back_populates="items")
     book: Mapped["Book"] = relationship(back_populates="order_items")
+    

@@ -26,7 +26,7 @@ class BookRepository:
         return book
 
     async def get_book_by_title_and_author(self, book_title: str, author: str):
-        book = await self.db.execute(
+        result = await self.db.execute(
             select(Book).where(Book.title == book_title, Book.author == author)
         )
-        return book
+        return result.scalar_one_or_none()

@@ -53,8 +53,6 @@ async def create_order_service(
 
     await db.commit()
     return await order_repo.get_order_by_id(order.id)
-    # await db.refresh(order)
-    # return order
 
 
 async def get_order_by_id_service(db: AsyncSession, order_id: int):
@@ -65,3 +63,29 @@ async def get_order_by_id_service(db: AsyncSession, order_id: int):
             status_code=status.HTTP_404_NOT_FOUND, detail="Order not found."
         )
     return order
+
+
+async def get_all_orders_service(db: AsyncSession):
+    repo = OrderRepository(db)
+    return await repo.get_all_orders()
+
+
+async def delete_order_by_id_service(db: AsyncSession, order_id: int, current_user: User):
+    repo = OrderRepository(db)
+    order = await repo.get_order_by_id(order_id)
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Order not found."
+        )
+    
+    if current_user.id != order.user_id and not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to delete this order",
+        )
+    for item in order.items:
+        if item.book:
+            item.book.stock += item.quantity
+    
+    await repo.delete_order(order)
+    await db.commit()

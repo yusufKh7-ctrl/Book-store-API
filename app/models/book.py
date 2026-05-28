@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from sqlalchemy import String, CheckConstraint, Numeric
+from sqlalchemy import String, CheckConstraint, Numeric, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 from decimal import Decimal
@@ -16,6 +16,7 @@ class Book(Base):
     __table_args__ = (
         CheckConstraint("stock >= 0", name="check_stock_non_negative"),
         CheckConstraint("price >= 0", name="check_price_non_negative"),
+        UniqueConstraint("title", "author", name="uq_book_title_author"),
     )
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(100), index=True)

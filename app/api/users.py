@@ -6,7 +6,7 @@ from ..services.user_service import (
     get_user_by_id_service,
     update_user_service,
     delete_user_service,
-    get_all_users_service
+    get_all_users_service,
 )
 from app.core.dependencies import get_current_active_user, get_admin_user
 
@@ -24,7 +24,7 @@ async def get_me(user=Depends(get_current_active_user)):
 
 
 @router.get("/", response_model=list[UserPublic])
-async def get_users(db: SessionDep, current_user = Depends(get_admin_user)):
+async def get_users(db: SessionDep, current_user=Depends(get_admin_user)):
     return await get_all_users_service(db)
 
 

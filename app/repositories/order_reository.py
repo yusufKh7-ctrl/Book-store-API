@@ -27,14 +27,11 @@ class OrderRepository:
         )
         result = await self.db.execute(statement)
         return result.scalar_one_or_none()
-    
+
     async def get_all_orders(self):
-        statement = (
-            select(Order)
-            .options(
-                selectinload(Order.user),
-                selectinload(Order.items).options(selectinload(OrderItem.book)),
-            )
+        statement = select(Order).options(
+            selectinload(Order.user),
+            selectinload(Order.items).options(selectinload(OrderItem.book)),
         )
         result = await self.db.execute(statement)
         return result.scalars().all()

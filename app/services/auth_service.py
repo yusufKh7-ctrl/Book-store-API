@@ -1,16 +1,12 @@
-from typing import Annotated
 from passlib.context import CryptContext
-from fastapi import HTTPException, status, Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import HTTPException
 from app.config import settings
-from jose import jwt, JWTError
+from jose import jwt
 from datetime import datetime, timedelta, UTC
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.user import UserLogin
-from app.models.user import User
 from typing import Dict
 from app.repositories.user_repository import UserRepository
-from app.db.session import SessionDep
 
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")

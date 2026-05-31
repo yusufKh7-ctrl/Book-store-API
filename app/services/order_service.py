@@ -70,14 +70,16 @@ async def get_all_orders_service(db: AsyncSession):
     return await repo.get_all_orders()
 
 
-async def delete_order_by_id_service(db: AsyncSession, order_id: int, current_user: User):
+async def delete_order_by_id_service(
+    db: AsyncSession, order_id: int, current_user: User
+):
     repo = OrderRepository(db)
     order = await repo.get_order_by_id(order_id)
     if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Order not found."
         )
-    
+
     if current_user.id != order.user_id and not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -86,6 +88,6 @@ async def delete_order_by_id_service(db: AsyncSession, order_id: int, current_us
     for item in order.items:
         if item.book:
             item.book.stock += item.quantity
-    
+
     await repo.delete_order(order)
     await db.commit()

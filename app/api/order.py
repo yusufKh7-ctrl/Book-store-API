@@ -5,8 +5,9 @@ from app.services.order_service import (
     get_order_by_id_service,
     get_all_orders_service,
     delete_order_by_id_service,
+    update_order_service
 )
-from app.schemas.order import OrderPublic, OrderCreate
+from app.schemas.order import OrderPublic, OrderCreate, OrderUpdate
 from app.core.dependencies import get_current_active_user, get_admin_user
 
 router = APIRouter()
@@ -36,3 +37,13 @@ async def delete_order(
     db: SessionDep, order_id: int, current_user=Depends(get_current_active_user)
 ):
     await delete_order_by_id_service(db, order_id, current_user)
+
+
+@router.put("/{order_id}", response_model=OrderPublic)
+async def update_order(
+    db: SessionDep,
+    order_id: int,
+    order_data: OrderUpdate,
+    current_user=Depends(get_current_active_user)
+):
+    return await update_order_service(db, order_id, order_data, current_user)

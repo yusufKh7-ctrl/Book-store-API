@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.order import Order, OrderItem
 from app.models.user import User
-from app.schemas.order import OrderCreate
-from app.repositories.order_reository import OrderRepository
+from app.schemas.order import OrderCreate, OrderUpdate
+from app.repositories.order_repository import OrderRepository
 from app.repositories.book_repository import BookRepository
 
 from decimal import Decimal
@@ -91,3 +91,65 @@ async def delete_order_by_id_service(
 
     await repo.delete_order(order)
     await db.commit()
+
+
+async def update_order_service(
+    db: AsyncSession, order_id: int, order_data: OrderUpdate, current_user: User
+):
+    repo = OrderRepository(db)
+    book_repo = BookRepository(db)
+
+    order = await repo.get_order_by_id(order_id)
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Order not found.",
+        )
+    
+    if current_user.id != order.user_id and not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to update this order",
+        )
+
+    for item in order.items:
+        if item.book:
+            item.book.stock += item.quantity
+    
+    await repo.clear_order_items(order)
+
+    total_order_price = Decimal("0.00")
+    items = order_data.items
+    for item in items:
+        book = await book_repo.get_by_id(item.book_id)
+        if not book:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Book with ID {item.book_id} not found."
+            )
+        
+        if item.quantity > book.stock:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Quantity for '{book.title}' is not currently available.",
+            )
+        
+        book.stock -= item.quantity
+
+
+        item_total_price = book.price * item.quantity
+        total_order_price += item_total_price
+
+        order_item = OrderItem(
+            book_id=item.book_id,
+            quantity=item.quantity,
+            unit_price=book.price
+        )
+
+        order.items.append(order_item)
+    
+    order.total_price = total_order_price
+
+    await repo.update_order(order)
+    await db.commit()
+    return await repo.get_order_by_id(order.id)

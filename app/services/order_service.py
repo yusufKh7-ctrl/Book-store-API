@@ -102,10 +102,10 @@ async def update_order_service(
     order = await repo.get_order_by_id(order_id)
     if not order:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Order not found.",
         )
-    
+
     if current_user.id != order.user_id and not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -115,7 +115,7 @@ async def update_order_service(
     for item in order.items:
         if item.book:
             item.book.stock += item.quantity
-    
+
     await repo.clear_order_items(order)
 
     total_order_price = Decimal("0.00")
@@ -125,29 +125,26 @@ async def update_order_service(
         if not book:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Book with ID {item.book_id} not found."
+                detail=f"Book with ID {item.book_id} not found.",
             )
-        
+
         if item.quantity > book.stock:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Quantity for '{book.title}' is not currently available.",
             )
-        
-        book.stock -= item.quantity
 
+        book.stock -= item.quantity
 
         item_total_price = book.price * item.quantity
         total_order_price += item_total_price
 
         order_item = OrderItem(
-            book_id=item.book_id,
-            quantity=item.quantity,
-            unit_price=book.price
+            book_id=item.book_id, quantity=item.quantity, unit_price=book.price
         )
 
         order.items.append(order_item)
-    
+
     order.total_price = total_order_price
 
     await repo.update_order(order)

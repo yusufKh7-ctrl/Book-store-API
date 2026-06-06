@@ -13,7 +13,7 @@ from app.db.session import SessionDep
 router = APIRouter()
 
 
-@router.post("", response_model=BookPublic)
+@router.post("/", response_model=BookPublic)
 async def create_book(book: BookCreate, db: SessionDep, user=Depends(get_admin_user)):
     return await create_book_service(book, db)
 

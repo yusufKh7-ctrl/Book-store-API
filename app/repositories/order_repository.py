@@ -42,7 +42,7 @@ class OrderRepository:
     async def update_order(self, order: Order):
         self.db.add(order)
         return order
-    
+
     async def clear_order_items(self, order: Order):
         order.items.clear()
         await self.db.flush()

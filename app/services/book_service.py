@@ -70,5 +70,3 @@ async def delete_book_by_id_service(book_id: int, db: AsyncSession):
     await db.commit()
 
     return {"detail": "The book has deleted"}
-
-

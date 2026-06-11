@@ -10,6 +10,10 @@ from main import app
 from app.db.session import get_db
 from app.db.base import Base
 from app.config import settings
+from app.schemas.user import UserCreate
+from app.services.user_service import create_user_service
+from app.services.auth_service import create_access_token
+from app.models.user import User
 
 
 @pytest_asyncio.fixture
@@ -33,9 +37,44 @@ async def db_session(async_engine):
         bind=async_engine, expire_on_commit=False, class_=AsyncSession
     )
     async with TestingSessionLocal() as session:
-        app.dependency_overrides[get_db] = lambda: (
-            session
-        )  # Understand what is this code line.
+        app.dependency_overrides[get_db] = lambda: session
         yield session
         await session.rollback()
         app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+async def normal_user(db_session):
+    user_data = UserCreate(
+        name="Test User",
+        email="testuser@example.com",
+        password="testpassword123",
+    )
+    return await create_user_service(user_data, db_session)
+
+
+@pytest_asyncio.fixture
+async def admin_user(db_session):
+    user_data = UserCreate(
+        name="Admin User",
+        email="admin@example.com",
+        password="adminpassword123",
+    )
+    user = await create_user_service(user_data, db_session)
+    user.is_admin = True
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user
+
+
+@pytest_asyncio.fixture
+async def user_token(normal_user):
+    token = create_access_token({"sub": str(normal_user.id)})
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest_asyncio.fixture
+async def admin_token(admin_user):
+    token = create_access_token({"sub": str(admin_user.id)})
+    return {"Authorization": f"Bearer {token}"}

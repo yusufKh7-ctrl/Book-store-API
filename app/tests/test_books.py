@@ -1,7 +1,7 @@
 import pytest
 from decimal import Decimal
 from fastapi import HTTPException
-from app.schemas.book import BookCreate
+from app.schemas.book import BookCreate, BookUpdate
 from app.services.book_service import (
     create_book_service,
     get_books_service,
@@ -9,7 +9,6 @@ from app.services.book_service import (
     update_book_by_id_service,
     delete_book_by_id_service,
 )
-from app.schemas.book import BookUpdate
 
 
 @pytest.mark.asyncio
@@ -126,12 +125,12 @@ async def test_update_book_by_id_success(db_session):
 async def test_update_book_by_id_not_found(db_session):
     update_data = BookUpdate(
         price=Decimal("39.99"),
-        stock=5,   
+        stock=5,
     )
 
     with pytest.raises(HTTPException) as exc_info:
         await update_book_by_id_service(999, update_data, db_session)
-    
+
     assert exc_info.value.status_code == 404
     assert exc_info.value.detail == "Book not found"
 

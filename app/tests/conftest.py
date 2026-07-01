@@ -11,10 +11,11 @@ from app.db.session import get_db
 from app.db.base import Base
 from app.config import settings
 from app.schemas.user import UserCreate
+from app.schemas.book import BookCreate
 from app.services.user_service import create_user_service
 from app.services.auth_service import create_access_token
-from app.models.user import User
-
+from app.services.book_service import create_book_service
+from decimal import Decimal
 
 @pytest_asyncio.fixture
 async def async_engine():
@@ -78,3 +79,16 @@ async def user_token(normal_user):
 async def admin_token(admin_user):
     token = create_access_token({"sub": str(admin_user.id)})
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest_asyncio.fixture
+async def sample_book(db_session):
+    book_data = BookCreate(
+        title="Clean Code",
+        description="Programming book",
+        author="Robert C. Martin",
+        price=Decimal("49.99"),
+        stock=10,
+    )
+
+    return await create_book_service(book_data, db_session)

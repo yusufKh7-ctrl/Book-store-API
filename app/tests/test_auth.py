@@ -3,7 +3,6 @@ from fastapi import HTTPException
 from app.schemas.user import UserCreate, UserLogin
 from app.services.user_service import create_user_service
 from app.services.auth_service import (
-    hash_password,
     verify_password,
     create_access_token,
     login_service,
@@ -26,6 +25,16 @@ async def test_hash_password(db_session):
 
     assert verify_password(user_data.password, user.hashed_password) is True
     assert verify_password("wrongPassword", user.hashed_password) is False
+
+
+def test_create_access_token():
+    data = {"sub": "42"}
+    token = create_access_token(data)
+    
+    decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=settings.ALGORITHM)
+
+    assert decoded["sub"] == "42"
+    assert "exp" in decoded
 
 
 @pytest.mark.asyncio

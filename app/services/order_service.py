@@ -65,9 +65,9 @@ async def get_order_by_id_service(db: AsyncSession, order_id: int):
     return order
 
 
-async def get_all_orders_service(db: AsyncSession):
+async def get_all_orders_service(db: AsyncSession, skip: int = 0, limit: int = 10):
     repo = OrderRepository(db)
-    return await repo.get_all_orders()
+    return await repo.get_all_orders(skip, limit)
 
 
 async def delete_order_by_id_service(

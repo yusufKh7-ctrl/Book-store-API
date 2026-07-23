@@ -15,9 +15,7 @@ from app.config import settings
 @pytest.mark.asyncio
 async def test_hash_password(db_session):
     user_data = UserCreate(
-        name="test user",
-        email="testuser@gmail.com",
-        password="testuser123"
+        name="test user", email="testuser@gmail.com", password="testuser123"
     )
     user = await create_user_service(user_data, db_session)
 
@@ -30,7 +28,7 @@ async def test_hash_password(db_session):
 def test_create_access_token():
     data = {"sub": "42"}
     token = create_access_token(data)
-    
+
     decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=settings.ALGORITHM)
 
     assert decoded["sub"] == "42"
@@ -40,20 +38,16 @@ def test_create_access_token():
 @pytest.mark.asyncio
 async def test_login_service(db_session):
     user_data = UserCreate(
-        name="test user",
-        email="testuser@gmail.com",
-        password="testuser123"
+        name="test user", email="testuser@gmail.com", password="testuser123"
     )
     user = await create_user_service(user_data, db_session)
 
-    login_data = UserLogin(
-        email=user.email,
-        password=user_data.password
-    )
+    login_data = UserLogin(email=user.email, password=user_data.password)
     result = await login_service(login_data, db_session)
 
-    decode = jwt.decode(result["access_token"], settings.SECRET_KEY, algorithms=settings.ALGORITHM)
-    
+    decode = jwt.decode(
+        result["access_token"], settings.SECRET_KEY, algorithms=settings.ALGORITHM
+    )
 
     assert "access_token" in result
     assert "token_type" in result
@@ -65,20 +59,14 @@ async def test_login_service(db_session):
     assert result["token_type"] == "bearer"
 
 
-
 @pytest.mark.asyncio
 async def test_login_wrong_password(db_session):
     user_data = UserCreate(
-        name="test user",
-        email="testuser@gmail.com",
-        password="testuser123"
+        name="test user", email="testuser@gmail.com", password="testuser123"
     )
     user = await create_user_service(user_data, db_session)
-    
-    login_data = UserLogin(
-        email=user.email,
-        password="wrongPassword"
-    )
+
+    login_data = UserLogin(email=user.email, password="wrongPassword")
 
     with pytest.raises(HTTPException) as exc_info:
         await login_service(login_data, db_session)
@@ -89,10 +77,7 @@ async def test_login_wrong_password(db_session):
 
 @pytest.mark.asyncio
 async def test_login_user_not_found(db_session):
-    login_data = UserLogin(
-        email="notfounduser@gmail.com",
-        password="Iamnothere"
-    )
+    login_data = UserLogin(email="notfounduser@gmail.com", password="Iamnothere")
     with pytest.raises(HTTPException) as exc_info:
         await login_service(login_data, db_session)
 

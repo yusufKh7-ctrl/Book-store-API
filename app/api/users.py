@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Request
 from app.db.session import SessionDep
 from ..schemas.user import UserCreate, UserPublic, UserUpdate
 from ..services.user_service import (
@@ -9,12 +9,14 @@ from ..services.user_service import (
     get_all_users_service,
 )
 from app.core.dependencies import get_current_active_user, get_admin_user
+from app.core.limiter import limiter
 
 router = APIRouter()
 
 
 @router.post("/", response_model=UserPublic)
-async def create_user(user_data: UserCreate, db: SessionDep):
+@limiter.limit("5/minute")
+async def create_user(request: Request, user_data: UserCreate, db: SessionDep):
     return await create_user_service(user_data, db)
 
 
@@ -24,8 +26,10 @@ async def get_me(user=Depends(get_current_active_user)):
 
 
 @router.get("/", response_model=list[UserPublic])
-async def get_users(db: SessionDep, current_user=Depends(get_admin_user)):
-    return await get_all_users_service(db)
+async def get_users(
+    db: SessionDep, current_user=Depends(get_admin_user), skip: int = 0, limit: int = 10
+):
+    return await get_all_users_service(db, skip, limit)
 
 
 @router.get("/{user_id}", response_model=UserPublic)

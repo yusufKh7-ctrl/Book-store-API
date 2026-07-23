@@ -17,6 +17,7 @@ from app.services.auth_service import create_access_token
 from app.services.book_service import create_book_service
 from decimal import Decimal
 
+
 @pytest_asyncio.fixture
 async def async_engine():
     engine = create_async_engine(settings.TEST_DATABASE_URL)

@@ -20,9 +20,9 @@ async def create_book_service(book_data: BookCreate, db: AsyncSession):
     return book
 
 
-async def get_books_service(db: AsyncSession):
+async def get_books_service(db: AsyncSession, skip: int = 0, limit: int = 10):
     repo = BookRepository(db)
-    return await repo.get_all()
+    return await repo.get_all(skip, limit)
 
 
 async def get_book_by_id_service(book_id: int, db: AsyncSession):

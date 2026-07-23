@@ -4,7 +4,7 @@ from app.schemas.user import UserCreate, UserUpdate
 from app.services.user_service import (
     create_user_service,
     get_user_by_id_service,
-    delete_user_service, 
+    delete_user_service,
     update_user_service,
 )
 
@@ -55,6 +55,7 @@ async def test_admin_can_delete_any_user(db_session, admin_user, normal_user):
         await get_user_by_id_service(normal_user.id, db_session)
     assert exc_info.value.status_code == 404
 
+
 @pytest.mark.asyncio
 async def test_delete_user_success(db_session, normal_user):
     await delete_user_service(normal_user.id, db_session, normal_user)
@@ -81,17 +82,12 @@ async def test_delete_user_unauthorized(db_session, normal_user):
 @pytest.mark.asyncio
 async def test_update_user_by_id_success(db_session):
     user_data = UserCreate(
-        name="Yusuf",
-        email="yusufkh7@gmail.com",
-        password="yusufkh123123"
+        name="Yusuf", email="yusufkh7@gmail.com", password="yusufkh123123"
     )
 
     user = await create_user_service(user_data, db_session)
 
-    update_user = UserUpdate(
-        name="Cipher",
-        email="cipherys777@boss.com"
-    )
+    update_user = UserUpdate(name="Cipher", email="cipherys777@boss.com")
     updated_user = await update_user_service(user.id, update_user, db_session)
 
     assert updated_user.name == update_user.name

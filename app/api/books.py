@@ -19,8 +19,8 @@ async def create_book(book: BookCreate, db: SessionDep, user=Depends(get_admin_u
 
 
 @router.get("", response_model=list[BookPublic])
-async def get_books(db: SessionDep):
-    return await get_books_service(db)
+async def get_books(db: SessionDep, skip: int = 0, limit: int = 10):
+    return await get_books_service(db, skip, limit)
 
 
 @router.get("/{book_id}", response_model=BookPublic)

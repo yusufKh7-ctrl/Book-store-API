@@ -43,9 +43,9 @@ async def login_service(data: UserLogin, db: AsyncSession):
     return {"access_token": token, "token_type": "bearer"}
 
 
-async def get_all_users_service(db: AsyncSession):
+async def get_all_users_service(db: AsyncSession, skip: int = 0, limit: int = 10):
     repo = UserRepository(db)
-    users = await repo.get_all_users()
+    users = await repo.get_all_users(skip, limit)
     return users
 
 

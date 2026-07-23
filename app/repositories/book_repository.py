@@ -14,8 +14,8 @@ class BookRepository:
         self.db.add(book)
         return book
 
-    async def get_all(self):
-        result = await self.db.execute(select(Book))
+    async def get_all(self, skip: int = 0, limit: int = 10):
+        result = await self.db.execute(select(Book).offset(skip).limit(limit))
         return result.scalars().all()
 
     async def delete(self, book: Book) -> None:

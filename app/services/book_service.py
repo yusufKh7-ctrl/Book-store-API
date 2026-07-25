@@ -70,3 +70,14 @@ async def delete_book_by_id_service(book_id: int, db: AsyncSession):
     await db.commit()
 
     return {"detail": "The book has deleted"}
+
+
+async def search_books_service(
+        db: AsyncSession,
+        title: str | None,
+        author: str | None,
+        skip: int = 0,
+        limit: int = 10
+):
+    repo = BookRepository(db)
+    return await repo.search(title, author, skip, limit)

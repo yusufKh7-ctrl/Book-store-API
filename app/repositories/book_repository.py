@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from app.models.book import Book
 
 
@@ -30,3 +30,16 @@ class BookRepository:
             select(Book).where(Book.title == book_title, Book.author == author)
         )
         return result.scalar_one_or_none()
+
+
+    async def search(self, title: str | None, author: str | None, skip: int = 0, limit: int = 10):
+        query = select(Book)
+
+        if title:
+            query = query.where(Book.title.ilike(f"%{title}%"))
+        if author:
+            query = query.where(Book.author.ilike(f"%{author}%"))
+
+        query = query.offset(skip).limit(limit)
+        result = await self.db.execute(query)
+        return result.scalars().all()

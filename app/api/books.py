@@ -6,6 +6,7 @@ from app.services.book_service import (
     get_book_by_id_service,
     delete_book_by_id_service,
     update_book_by_id_service,
+    search_books_service
 )
 from app.core.dependencies import get_admin_user
 from app.db.session import SessionDep
@@ -22,6 +23,15 @@ async def create_book(book: BookCreate, db: SessionDep, user=Depends(get_admin_u
 async def get_books(db: SessionDep, skip: int = 0, limit: int = 10):
     return await get_books_service(db, skip, limit)
 
+@router.get("/search", response_model=list[BookPublic])
+async def search_books(
+    db: SessionDep,
+    title: str | None = None,
+    author: str | None = None,
+    skip: int = 0,
+    limit: int = 10
+    ):
+    return await search_books_service(db, title, author, skip, limit)
 
 @router.get("/{book_id}", response_model=BookPublic)
 async def get_book_by_id(book_id: int, db: SessionDep):
@@ -38,3 +48,4 @@ async def update_book(
     book_id: int, book_data: BookUpdate, db: SessionDep, user=Depends(get_admin_user)
 ):
     return await update_book_by_id_service(book_id, book_data, db)
+

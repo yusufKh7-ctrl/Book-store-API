@@ -10,7 +10,6 @@ dependencies = [
     "asyncpg>=0.31.0",
     "fastapi[standard]>=0.135.3",
     "passlib[bcrypt]>=1.7.4",
-    "psycopg2>=2.9.11",
     "pydantic>=2.13.0",
     "pydantic-settings>=2.13.1",
     "python-dotenv>=1.2.2",

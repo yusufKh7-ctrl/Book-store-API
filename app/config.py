@@ -6,6 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 class Settings(BaseSettings):
     DATABASE_URL: str
+    DATABASE_PASSWORD: str
     TEST_DATABASE_URL: str
     SECRET_KEY: str
     ALGORITHM: str = "HS256"

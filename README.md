@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="book-store-api.jpg" width="200" alt="book-stroe-api">
+  <img src="book-store-api.jpg" width="400" alt="book-stroe-api">
   <h1 align="center">Book-Store API 📚</h1>
 <p align="center">
   <img src="https://img.shields.io/badge/Python-121011?style=flat-square&logo=python&logoColor=white" />
@@ -12,6 +12,7 @@
 </p>
 </div>
 <hr>
+
 > A RESTful API for a bookstore built with **FastAPI** and **PostgreSQL**.  
 > This project was developed to practice building production-ready backend systems, covering authentication, authorization, order management, database migrations, testing, and containerization.
 

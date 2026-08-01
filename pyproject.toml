@@ -1,7 +1,7 @@
 [project]
 name = "book-store"
 version = "0.1.0"
-description = "Add your description here"
+description = "A RESTful API for a bookstore built with FastAPI and PostgreSQL*"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [

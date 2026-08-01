@@ -83,7 +83,7 @@ Book-store-API/
 
 ### Prerequisites
 
-- Python 3.12+
+- Python 3.14+
 - [uv](https://github.com/astral-sh/uv)
 - PostgreSQL (or use Docker)
 - Docker & Docker Compose (optional but recommended)

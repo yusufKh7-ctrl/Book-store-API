@@ -1,5 +1,5 @@
 from passlib.context import CryptContext
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from app.config import settings
 from jose import jwt
 from datetime import datetime, timedelta, UTC
@@ -7,11 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.user import UserLogin
 from typing import Dict
 from app.repositories.user_repository import UserRepository
+from app.core.logger import get_logger
 
+logger = get_logger(__name__)
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 SECRET_KEY = settings.SECRET_KEY
-ALGORITHM = "HS256"
+ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 
@@ -36,8 +38,12 @@ async def login_service(data: UserLogin, db: AsyncSession) -> Dict[str, str]:
     user = await repo.get_user_by_email(data.email)
 
     if not user or not verify_password(data.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Invalid email or password.")
+        logger.warning(f"Failed login attempt for email={data.email}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password.",
+        )
 
     token = create_access_token({"sub": str(user.id)})
-
+    logger.info(f"Login successful: user={user.name}, id={user.id}")
     return {"access_token": token, "token_type": "bearer"}

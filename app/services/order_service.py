@@ -8,6 +8,11 @@ from app.repositories.order_repository import OrderRepository
 from app.repositories.book_repository import BookRepository
 
 from decimal import Decimal
+from app.core.logger import get_logger
+
+logger = get_logger(__name__)
+
+
 
 
 async def create_order_service(
@@ -25,15 +30,18 @@ async def create_order_service(
     for item in items:
         book = await book_repo.get_by_id(item.book_id)
         if not book:
+            logger.warning(f"Book not found: book_id={item.book_id}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Book with ID {item.book_id} not found.",
             )
 
         if item.quantity > book.stock:
+            msg = f"Quantity for '{book.title}' is not currently available."
+            logger.warning(msg)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Quantity for '{book.title}' is not currently available.",
+                detail=msg,
             )
 
         book.stock -= item.quantity
@@ -52,6 +60,9 @@ async def create_order_service(
     await order_repo.create_order(order)
 
     await db.commit()
+    logger.info(
+    f"Order created: order_id={order.id}, user={current_user.name}, user_id={current_user.id}"
+    )
     return await order_repo.get_order_by_id(order.id)
 
 
@@ -59,6 +70,7 @@ async def get_order_by_id_service(db: AsyncSession, order_id: int):
     repo = OrderRepository(db)
     order = await repo.get_order_by_id(order_id)
     if not order:
+        logger.warning(f"Order by id '{order_id}' not found.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Order not found."
         )
@@ -76,11 +88,13 @@ async def delete_order_by_id_service(
     repo = OrderRepository(db)
     order = await repo.get_order_by_id(order_id)
     if not order:
+        logger.warning(f"Order by id '{order_id}' not found.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Order not found."
         )
 
     if current_user.id != order.user_id and not current_user.is_admin:
+        logger.warning(f"Permission denied: user_id={current_user.id} tried to tried to delete order_id={order_id}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to delete this order",
@@ -91,6 +105,7 @@ async def delete_order_by_id_service(
 
     await repo.delete_order(order)
     await db.commit()
+    logger.info(f"Order Deleted: order_id={order_id}, by_user_id='{current_user.id}'")
 
 
 async def update_order_service(
@@ -101,12 +116,14 @@ async def update_order_service(
 
     order = await repo.get_order_by_id(order_id)
     if not order:
+        logger.warning(f"Order by id '{order_id}' not found.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Order not found.",
         )
 
     if current_user.id != order.user_id and not current_user.is_admin:
+        logger.warning(f"Permission denied: user_id='{current_user.id}' tried to update order_id={order_id}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to update this order",
@@ -123,12 +140,14 @@ async def update_order_service(
     for item in items:
         book = await book_repo.get_by_id(item.book_id)
         if not book:
+            logger.warning(f"Book with ID {item.book_id} not found.")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Book with ID {item.book_id} not found.",
             )
 
         if item.quantity > book.stock:
+            logger.warning(f"Quantity for '{book.title}' is not currently available.")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Quantity for '{book.title}' is not currently available.",
@@ -149,4 +168,5 @@ async def update_order_service(
 
     await repo.update_order(order)
     await db.commit()
+    logger.info(f"Order Updated: order_id='{order_id}', by_user_id='{current_user.id}'")
     return await repo.get_order_by_id(order.id)

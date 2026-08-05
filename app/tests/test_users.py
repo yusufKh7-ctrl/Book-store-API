@@ -75,7 +75,7 @@ async def test_delete_user_unauthorized(db_session, normal_user):
     with pytest.raises(HTTPException) as exc_info:
         await delete_user_service(user.id, db_session, normal_user)
 
-    assert exc_info.value.status_code == 401
+    assert exc_info.value.status_code == 403
     assert exc_info.value.detail == "You don't have permission to delete this user"
 
 

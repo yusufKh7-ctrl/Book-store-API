@@ -20,7 +20,7 @@ from decimal import Decimal
 
 @pytest_asyncio.fixture
 async def async_engine():
-    engine = create_async_engine(settings.TEST_DATABASE_URL)
+    engine = create_async_engine(settings.TEST_ASYNC_DATABASE_URL)
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

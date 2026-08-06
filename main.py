@@ -29,6 +29,11 @@ app = FastAPI(
 
         ---
         *Feel free to explore and test all available endpoints.*
+        <p align="center">
+        <a href="https://github.com/yusufKh7-ctrl/Book-store-API" target="_blank">
+        <img src="https://img.shields.io/badge/GitHub-Repository-black?style=plastic&logo=github" alt="GitHub Repo">
+        </a>
+        </p>
         """),
     version="1.0.0"
     )

@@ -10,6 +10,9 @@
   <img src="https://img.shields.io/badge/Pytest-121011?style=flat-square&logo=pytest&logoColor=white" />
   <img src="https://img.shields.io/badge/GitHub%20Actions-121011?style=flat-square&logo=githubactions&logoColor=white" />
 </p>
+<a href="https://book-store-api-production-71ab.up.railway.app/docs">
+    <img src="https://img.shields.io/badge/🚀_Live_Demo-Swagger_UI-007ACC?style=for-the-badge&logoColor=white" alt="Live Demo" />
+  </a>
 </div>
 <hr>
 
@@ -18,6 +21,13 @@
 
 ---
 
+## 🌐 Live Demo
+
+The API is deployed and live on **Railway**:
+- **Interactive API Docs (Swagger UI):** [https://book-store-api-production-71ab.up.railway.app/docs](https://book-store-api-production-71ab.up.railway.app/docs)
+- **ReDoc Documentation:** [https://book-store-api-production-71ab.up.railway.app/redoc](https://book-store-api-production-71ab.up.railway.app/redoc)
+
+---
 ## Features
 
 - JWT Authentication & Authorization (Admin / User roles)

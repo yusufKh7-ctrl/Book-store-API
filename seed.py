@@ -8,6 +8,8 @@ from app.models.user import User
 from app.config import settings
 from app.core.logger import get_logger
 from app.services.auth_service import hash_password
+from app.config import settings
+
 logger = get_logger(__name__)
 DATABASE_URL = settings.DATABASE_URL
 
@@ -70,7 +72,7 @@ async def seed_books(session: AsyncSession):
 
 
 async def seed():
-    engine = create_async_engine(DATABASE_URL)
+    engine = create_async_engine(settings.ASYNC_DATABASE_URL)
     SessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession)
 
     async with SessionLocal() as session:

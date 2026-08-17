@@ -7,6 +7,7 @@ from app.core.logger import get_logger
 
 logger = get_logger(__name__)
 
+
 async def create_book_service(book_data: BookCreate, db: AsyncSession):
     repo = BookRepository(db)
     book = Book(**book_data.model_dump())
@@ -81,11 +82,11 @@ async def delete_book_by_id_service(book_id: int, db: AsyncSession):
 
 
 async def search_books_service(
-        db: AsyncSession,
-        title: str | None,
-        author: str | None,
-        skip: int = 0,
-        limit: int = 10
+    db: AsyncSession,
+    title: str | None,
+    author: str | None,
+    skip: int = 0,
+    limit: int = 10,
 ):
     repo = BookRepository(db)
     return await repo.search(title, author, skip, limit)

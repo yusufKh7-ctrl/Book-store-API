@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
+from sqlalchemy import select
 from app.models.book import Book
 
 
@@ -9,6 +9,11 @@ class BookRepository:
 
     async def get_by_id(self, book_id: int):
         return await self.db.get(Book, book_id)
+
+    async def get_by_id_for_update(self, book_id: int):
+        stmt = select(Book).where(Book.id == book_id).with_for_update()
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
 
     def create(self, book: Book):
         self.db.add(book)
@@ -31,8 +36,9 @@ class BookRepository:
         )
         return result.scalar_one_or_none()
 
-
-    async def search(self, title: str | None, author: str | None, skip: int = 0, limit: int = 10):
+    async def search(
+        self, title: str | None, author: str | None, skip: int = 0, limit: int = 10
+    ):
         query = select(Book)
 
         if title:

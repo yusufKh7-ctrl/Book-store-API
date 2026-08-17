@@ -2,12 +2,13 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
-from app.schemas.user import UserCreate, UserLogin, UserUpdate
+from app.schemas.user import UserCreate, UserUpdate
 from app.repositories.user_repository import UserRepository
-from .auth_service import create_access_token, hash_password, verify_password
+from .auth_service import hash_password
 from app.core.logger import get_logger
 
 logger = get_logger(__name__)
+
 
 async def create_user_service(user_data: UserCreate, db: AsyncSession):
     repo = UserRepository(db)
@@ -17,7 +18,7 @@ async def create_user_service(user_data: UserCreate, db: AsyncSession):
         logger.warning(f"Registration failed: email already exists ({user_data.email})")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists."
-        )   
+        )
 
     hashed_password = hash_password(user_data.password)
     db_user = User(
@@ -27,7 +28,9 @@ async def create_user_service(user_data: UserCreate, db: AsyncSession):
     repo.add_user(db_user)
     await db.commit()
     await db.refresh(db_user)
-    logger.info(f"User created: user_name={user_data.name}, user_email={user_data.email}")
+    logger.info(
+        f"User created: user_name={user_data.name}, user_email={user_data.email}"
+    )
     return db_user
 
 
@@ -80,7 +83,9 @@ async def delete_user_service(user_id: int, db: AsyncSession, current_user: User
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     if current_user.id != user_id and not current_user.is_admin:
-        logger.warning(f"Permission denied: user_id={current_user.id} tried to delete user_id={user_id}")
+        logger.warning(
+            f"Permission denied: user_id={current_user.id} tried to delete user_id={user_id}"
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to delete this user",

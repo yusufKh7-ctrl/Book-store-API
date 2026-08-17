@@ -1,9 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.api import users, books, auth, order
 from app.core.limiter import limiter
 from app.core.logger import get_logger
+from app.core.exceptions import BookNotFoundError, InsufficientStockError
+
 from textwrap import dedent
 
 logger = get_logger(__name__)
@@ -35,11 +38,27 @@ app = FastAPI(
         </a>
         </p>
         """),
-    version="1.0.0"
-    )
+    version="1.0.0",
+)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
+
+@app.exception_handler(BookNotFoundError)
+async def book_not_found_handler(request: Request, exc: BookNotFoundError):
+    return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+@app.exception_handler(InsufficientStockError)
+async def insufficient_stock_handler(request: Request, exc: InsufficientStockError):
+    return JSONResponse(
+        status_code=400,
+        content={
+            "detail": str(exc),
+            "book_id": exc.book_id,
+            "requested": exc.requested,
+            "available": exc.available
+        }
+    )
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["user"])

@@ -46,6 +46,15 @@ async def db_session(async_engine):
 
 
 @pytest_asyncio.fixture
+async def session_factory(async_engine):
+    return async_sessionmaker(
+        bind=async_engine,
+        expire_on_commit=False,
+        class_=AsyncSession,
+    )
+
+
+@pytest_asyncio.fixture
 async def normal_user(db_session):
     user_data = UserCreate(
         name="Test User",

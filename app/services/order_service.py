@@ -9,10 +9,8 @@ from app.repositories.book_repository import BookRepository
 
 from decimal import Decimal
 from app.core.logger import get_logger
-
+from app.core.exceptions import BookNotFoundError, InsufficientStockError
 logger = get_logger(__name__)
-
-
 
 
 async def create_order_service(
@@ -28,20 +26,18 @@ async def create_order_service(
     items = order_data.items
 
     for item in items:
-        book = await book_repo.get_by_id(item.book_id)
+        book = await book_repo.get_by_id_for_update(item.book_id)
         if not book:
             logger.warning(f"Book not found: book_id={item.book_id}")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Book with ID {item.book_id} not found.",
-            )
+            raise BookNotFoundError(item.book_id)
 
         if item.quantity > book.stock:
-            msg = f"Quantity for '{book.title}' is not currently available."
-            logger.warning(msg)
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=msg,
+            logger.warning(f"Quantity for '{book.title}' is not currently available.")
+            raise InsufficientStockError(
+                item.book_id,
+                book.title,
+                item.quantity,
+                book.stock
             )
 
         book.stock -= item.quantity
@@ -61,7 +57,7 @@ async def create_order_service(
 
     await db.commit()
     logger.info(
-    f"Order created: order_id={order.id}, user={current_user.name}, user_id={current_user.id}"
+        f"Order created: order_id={order.id}, user={current_user.name}, user_id={current_user.id}"
     )
     return await order_repo.get_order_by_id(order.id)
 
@@ -94,7 +90,9 @@ async def delete_order_by_id_service(
         )
 
     if current_user.id != order.user_id and not current_user.is_admin:
-        logger.warning(f"Permission denied: user_id={current_user.id} tried to tried to delete order_id={order_id}")
+        logger.warning(
+            f"Permission denied: user_id={current_user.id} tried to tried to delete order_id={order_id}"
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to delete this order",
@@ -123,7 +121,9 @@ async def update_order_service(
         )
 
     if current_user.id != order.user_id and not current_user.is_admin:
-        logger.warning(f"Permission denied: user_id='{current_user.id}' tried to update order_id={order_id}")
+        logger.warning(
+            f"Permission denied: user_id='{current_user.id}' tried to update order_id={order_id}"
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to update this order",

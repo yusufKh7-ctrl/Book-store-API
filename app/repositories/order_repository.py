@@ -5,6 +5,7 @@ from app.models.order import Order, OrderItem
 
 
 class OrderRepository:
+
     def __init__(self, db: AsyncSession):
         self.db = db
 
@@ -16,7 +17,7 @@ class OrderRepository:
         self.db.add(order_item)
         return order_item
 
-    async def get_order_by_id(self, order_id: int):
+    async def _get_order(self, order_id: int, *, for_update: bool = False):
         statement = (
             select(Order)
             .where(Order.id == order_id)
@@ -25,8 +26,17 @@ class OrderRepository:
                 selectinload(Order.items).options(selectinload(OrderItem.book)),
             )
         )
+        if for_update:
+            statement.with_for_update()
+
         result = await self.db.execute(statement)
         return result.scalar_one_or_none()
+
+    async def get_order_by_id(self, order_id: int):
+        return await self._get_order(order_id)
+
+    async def get_order_by_id_for_update(self, order_id: int):
+        return await self._get_order(order_id, for_update=True)
 
     async def get_all_orders(self, skip: int = 0, limit: int = 10):
         statement = (

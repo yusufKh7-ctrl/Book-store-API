@@ -439,11 +439,10 @@ async def test_update_order_insufficient_stock(db_session, sample_book, normal_u
     )
 
     assert order is not None
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(InsufficientStockError) as exc_info:
         await update_order_service(db_session, order.id, order_update, normal_user)
 
-    assert exc_info.value.status_code == 400
-    assert (
-        exc_info.value.detail
-        == f"Quantity for '{sample_book.title}' is not currently available."
-    )
+    assert exc_info.value.book_id == sample_book.id
+    assert exc_info.value.available == sample_book.stock
+    assert exc_info.value.requested == 15
+    assert exc_info.value.book_title == sample_book.title

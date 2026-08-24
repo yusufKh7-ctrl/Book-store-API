@@ -112,7 +112,7 @@ async def update_order_service(
     repo = OrderRepository(db)
     book_repo = BookRepository(db)
 
-    order = await repo.get_order_by_id(order_id)
+    order = await repo.get_order_by_id_for_update(order_id)
     if not order:
         logger.warning(f"Order by id '{order_id}' not found.")
         raise HTTPException(
@@ -130,27 +130,27 @@ async def update_order_service(
         )
 
     for item in order.items:
-        if item.book:
-            item.book.stock += item.quantity
+        book_existing = await book_repo.get_by_id_for_update(item.book.id)
+        if book_existing:
+            book_existing.stock += item.quantity
 
     await repo.clear_order_items(order)
 
     total_order_price = Decimal("0.00")
     items = order_data.items
     for item in items:
-        book = await book_repo.get_by_id(item.book_id)
+        book = await book_repo.get_by_id_for_update(item.book_id)
         if not book:
             logger.warning(f"Book with ID {item.book_id} not found.")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Book with ID {item.book_id} not found.",
-            )
+            raise BookNotFoundError(item.book_id)
 
         if item.quantity > book.stock:
             logger.warning(f"Quantity for '{book.title}' is not currently available.")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Quantity for '{book.title}' is not currently available.",
+            raise InsufficientStockError(
+                book.id,
+                book.title,
+                item.quantity,
+                book.stock
             )
 
         book.stock -= item.quantity

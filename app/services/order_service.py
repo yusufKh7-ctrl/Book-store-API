@@ -81,7 +81,9 @@ async def get_all_orders_service(db: AsyncSession, skip: int = 0, limit: int = 1
 async def delete_order_by_id_service(
     db: AsyncSession, order_id: int, current_user: User
 ):
+    book_repo = BookRepository(db)
     repo = OrderRepository(db)
+    
     order = await repo.get_order_by_id(order_id)
     if not order:
         logger.warning(f"Order by id '{order_id}' not found.")
@@ -98,7 +100,8 @@ async def delete_order_by_id_service(
             detail="You don't have permission to delete this order",
         )
     for item in order.items:
-        if item.book:
+        book = await book_repo.get_by_id_for_update(item.book_id)
+        if book:
             item.book.stock += item.quantity
 
     await repo.delete_order(order)
@@ -130,15 +133,14 @@ async def update_order_service(
         )
 
     for item in order.items:
-        book_existing = await book_repo.get_by_id_for_update(item.book.id)
-        if book_existing:
-            book_existing.stock += item.quantity
+        book = await book_repo.get_by_id_for_update(item.book.id)
+        if book:
+            book.stock += item.quantity
 
     await repo.clear_order_items(order)
 
     total_order_price = Decimal("0.00")
-    items = order_data.items
-    for item in items:
+    for item in order_data.items:
         book = await book_repo.get_by_id_for_update(item.book_id)
         if not book:
             logger.warning(f"Book with ID {item.book_id} not found.")

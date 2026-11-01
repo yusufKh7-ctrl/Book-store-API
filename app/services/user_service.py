@@ -53,7 +53,7 @@ async def get_user_by_id_service(user_id: int, db: AsyncSession):
     return user
 
 
-async def update_user_service(user_id: int, user_data: UserUpdate, db: AsyncSession):
+async def update_user_service(user_id: int, user_data: UserUpdate, current_user: User, db: AsyncSession):
     repo = UserRepository(db)
     user = await repo.get_user_by_id(user_id)
 
@@ -63,6 +63,15 @@ async def update_user_service(user_id: int, user_data: UserUpdate, db: AsyncSess
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
 
+    if current_user.id != user_id and not current_user.is_admin:
+        logger.warning(
+            f"Permission denied: user_id={current_user.id} tried to update user_id={user_id}"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to update this user",
+        )
+    
     update_user = user_data.model_dump(exclude_unset=True)
 
     for key, value in update_user.items():

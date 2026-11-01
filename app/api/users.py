@@ -44,7 +44,7 @@ async def update_user(
     db: SessionDep,
     current_user=Depends(get_current_active_user),
 ):
-    return await update_user_service(user_id, user_data, db)
+    return await update_user_service(user_id, user_data, current_user, db)
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)

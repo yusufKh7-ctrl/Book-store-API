@@ -16,7 +16,7 @@ class UserUpdate(BaseModel):
 class UserPublic(BaseModel):
     id: int
     name: str
-    email: str
+    email: EmailStr
     is_active: bool
     is_admin: bool
 
